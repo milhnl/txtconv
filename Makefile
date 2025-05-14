@@ -9,3 +9,6 @@ install: txtconv.sh
 
 uninstall:
 	rm -f "${DESTDIR}${PREFIX}/bin/txtconv"
+
+test:
+	sh test.sh

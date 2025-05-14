@@ -50,9 +50,20 @@ txtconv() {
 	done
 	shift $(($OPTIND - 1))
 	if "$inplace"; then
-		for x in "$@"; do
-			<"$x" sed "$(sed_expr "$opts")" | sponge "$x"
-		done
+		case "$(sed --help 2>&1 || :)" in
+		*"-i extension"*)
+			sed -i '' "$(sed_expr "$opts")" "$@"
+			;;
+		*"-i[SUFFIX]"*)
+			sed -i "$(sed_expr "$opts")" "$@"
+			;;
+		*)
+			for x in "$@"; do
+				<"$x" sed "$(sed_expr "$opts")" | sponge "$x"
+			done
+			;;
+
+		esac
 	else
 		sed "$(sed_expr "$opts")"
 	fi

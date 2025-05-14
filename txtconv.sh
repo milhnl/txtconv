@@ -13,20 +13,13 @@ encoding() {
     '
 }
 
-stream() {
-	sed "$(
-		fnmatch '*b*' "$1" \
-			&& printf '1s/^\\(\xef\xbb\xbf\\)\\{0,1\\}/\xef\xbb\xbf/;' \
-			|| printf '1s/^\xef\xbb\xbf//;'
-	)$(
-		fnmatch '*c*' "$1" \
-			&& printf 's/\\(\r\\)\\{0,1\\}$/\r/;' \
-			|| printf 's/\r$//;'
-	)"
-}
-
-edit() {
-	<"$2" stream "$1" | sponge "$2"
+sed_expr() {
+	fnmatch '*b*' "$1" \
+		&& printf '1s/^\\(\xef\xbb\xbf\\)\\{0,1\\}/\xef\xbb\xbf/;' \
+		|| printf '1s/^\xef\xbb\xbf//;'
+	fnmatch '*c*' "$1" \
+		&& printf 's/\\(\r\\)\\{0,1\\}$/\r/;' \
+		|| printf 's/\r$//;'
 }
 
 txtconv() {
@@ -58,10 +51,10 @@ txtconv() {
 	shift $(($OPTIND - 1))
 	if "$inplace"; then
 		for x in "$@"; do
-			edit "$opts" "$x"
+			<"$x" sed "$(sed_expr "$opts")" | sponge "$x"
 		done
 	else
-		stream "$opts"
+		sed "$(sed_expr "$opts")"
 	fi
 }
 

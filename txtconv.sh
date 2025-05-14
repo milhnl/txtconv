@@ -6,9 +6,11 @@ sponge() { set -- "$1" "$(mktemp)" && cat >"$2" && mv "$2" "$1"; }
 fnmatch() { case "$2" in $1) return 0 ;; *) return 1 ;; esac }
 
 encoding() {
-	head -n1 2>/dev/null | awk '
-        /^\357\273\277/ && NR == 1 { printf "b"; }
-        /\r$/ && NR == 1 { printf "c"; }'
+	head -n1 2>/dev/null | sed -n '
+        1s/^\xef\xbb\xbf.*\r$/bc/p;
+        1s/^\xef\xbb\xbf.*$/b/p;
+        1s/^.*\r$/c/p;
+    '
 }
 
 stream() {
